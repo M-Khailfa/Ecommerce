@@ -14,6 +14,7 @@ namespace Ecommerce.Core.Dtos.Auth
         public string Email { get; set; }
         public List<string> Roles { get; set; }
         public string Token { get; set; }
+        public bool RequiresOTP { get; set; }
         //--------------
         [JsonIgnore]
         public string? RefreshToken { get; set; }

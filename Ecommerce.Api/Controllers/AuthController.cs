@@ -45,15 +45,35 @@ namespace Ecommerce.Api.Controllers
             var response = new ApiResponse();
 
             var result = await _authService.LoginAsync(loginDto);
+
+            if (result.RequiresOTP)
+            {
+                response = ApiResponse.Success(new { result.Email, result.RequiresOTP }, result.Message);
+                return Ok(response);
+            }
+
+            if (!result.IsAuthenticated && !result.RequiresOTP)
+                return Unauthorized(result.Message);
+
+            response = ApiResponse.BadRequest("No Need For OTP!");
+            return BadRequest(response);
+        }
+
+        [HttpPost("verify-otp")]
+        public async Task<IActionResult> VerifyOtp([FromBody] VerifyOtpDto verifyOtpDto)
+        {
+            var response = new ApiResponse();
+            var result = await _authService.VerifyOtpAsync(verifyOtpDto);
+
             if (!result.IsAuthenticated)
-                return BadRequest(result.Message);
+                return Unauthorized(result.Message);
 
             if (!string.IsNullOrEmpty(result.RefreshToken))
             {
                 SetRefreshTokenInCookie(result.RefreshToken, result.RefreshTokenExpiration);
             }
 
-            response = ApiResponse.Success(result, result.Message);
+            response = ApiResponse.Success(result, "OTP verified successfully. Logged in.");
             return Ok(response);
         }
 

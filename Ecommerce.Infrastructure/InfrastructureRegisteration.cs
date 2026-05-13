@@ -1,5 +1,7 @@
 ﻿using Ecommerce.Core.Entities;
+using Ecommerce.Core.Interfaces;
 using Ecommerce.Core.Settings;
+using Ecommerce.Infrastructure.Repos;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -69,10 +71,13 @@ namespace Ecommerce.Infrastructure
                     };
                 });
 
-            //services.AddScoped<IAuthService, AuthService>();
-            //services.AddScoped<IImageService, ImageService>();
-            //services.AddScoped<IEventsService, EventsService>();
-            //services.AddScoped<IBookingService, BookingService>();
+            services.Configure<SmtpSettings>(configuration.GetSection("SmtpSettings"));
+            services.AddMemoryCache();
+            services.AddScoped<IEmailService, EmailService>();
+            services.AddScoped<IOtpService, OtpService>();
+
+            services.AddScoped<IAuthService, AuthService>();
+            services.AddScoped<IImageService, ImageService>();
 
             return services;
         }

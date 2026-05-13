@@ -20,11 +20,15 @@ namespace Ecommerce.Infrastructure.Repos
         public readonly UserManager<AppUser> _userManager;
         public readonly RoleManager<IdentityRole> _roleManager;
         public readonly JWT _jwt;
-        public AuthService(UserManager<AppUser> userManager, RoleManager<IdentityRole> roleManager, IOptions<JWT> jwt)
+        private readonly IOtpService _otpService;
+        private readonly IEmailService _emailService;
+        public AuthService(UserManager<AppUser> userManager, RoleManager<IdentityRole> roleManager, IOptions<JWT> jwt, IEmailService emailService, IOtpService otpService)
         {
             _roleManager = roleManager;
             _userManager = userManager;
             _jwt = jwt.Value;
+            _emailService = emailService;
+            _otpService = otpService;
         }
         public async Task<AuthDto> RegisterAsync(RegisterDto registerDto)
         {
@@ -74,6 +78,40 @@ namespace Ecommerce.Infrastructure.Repos
                 authModel.Message = "Email or Password is incorrect!";
                 return authModel;
             }
+            var otp = _otpService.GenerateAndStoreOtp(user.Email);
+            string emailBody = $@"
+            <div style='font-family: Arial, sans-serif; padding: 20px;'>
+                <h2>Your Security Code</h2>
+                <p>Please use the following 6-digit code to complete your login:</p>
+                <h1 style='color: #007bff; letter-spacing: 5px;'>{otp}</h1>
+                <p>This code expires in 10 minutes.</p>
+            </div>";
+
+            await _emailService.SendEmailAsync(user.Email, "Ecommerce Login Verification", emailBody);
+            authModel.RequiresOTP = true;
+            authModel.Email = user.Email;
+            authModel.Message = "Credentials verified. Waiting for OTP Verification.";
+
+            return authModel;
+        }
+
+        public async Task<AuthDto> VerifyOtpAsync(VerifyOtpDto verifyDto)
+        {
+            var authModel = new AuthDto();
+
+            var isValid = _otpService.ValidateOtp(verifyDto.Email, verifyDto.OtpCode);
+            if (!isValid)
+            {
+                authModel.Message = "Invalid or expired OTP.";
+                return authModel;
+            }
+
+            var user = await _userManager.FindByEmailAsync(verifyDto.Email);
+            if (user == null)
+            {
+                authModel.Message = "User not found.";
+                return authModel;
+            }
 
             var jwtSecurityToken = await CreateJwtToken(user);
             var roles = await _userManager.GetRolesAsync(user);
@@ -83,6 +121,7 @@ namespace Ecommerce.Infrastructure.Repos
             authModel.IsAuthenticated = true;
             authModel.Token = new JwtSecurityTokenHandler().WriteToken(jwtSecurityToken);
             authModel.Roles = roles.ToList();
+            authModel.RequiresOTP = false;
 
             if (user.RefreshTokens.Any(t => t.IsActive))
             {

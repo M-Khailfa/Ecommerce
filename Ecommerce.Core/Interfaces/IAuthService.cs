@@ -9,6 +9,7 @@ namespace Ecommerce.Core.Interfaces
     {
         Task<AuthDto> RegisterAsync(RegisterDto registerDto);
         Task<AuthDto> LoginAsync(LoginDto loginDto);
+        Task<AuthDto> VerifyOtpAsync(VerifyOtpDto verifyDto);
         Task<AuthDto> RefreshTokenAsync(string refreshToken);
         Task<bool> RevokeTokenAsync(string refreshToken);
     }
