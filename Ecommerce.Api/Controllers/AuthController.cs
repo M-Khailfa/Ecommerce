@@ -127,6 +127,33 @@ namespace Ecommerce.Api.Controllers
             return Ok(response);
         }
 
+        [HttpPost("forgot-password")]
+        public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordDto forgotPasswordDto)
+        {
+            var response = new ApiResponse();
+
+            var result = await _authService.ForgotPasswordAsync(forgotPasswordDto.Email);
+
+            response = ApiResponse.Success(result.Message);
+            return Ok(response);
+        }
+
+        [HttpPost("reset-password")]
+        public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordDto resetPasswordDto)
+        {
+            var response = new ApiResponse();
+            var result = await _authService.ResetPasswordAsync(resetPasswordDto);
+
+            if (!result.IsAuthenticated)
+            {
+                response = ApiResponse.BadRequest(result.Message);
+                return BadRequest(response);
+            }
+
+            response = ApiResponse.Success(result.Message);
+            return Ok(response);
+        }
+
         private void SetRefreshTokenInCookie(string refreshToken, DateTime expires)
         {
             var cookieOptions = new CookieOptions

@@ -203,6 +203,69 @@ namespace Ecommerce.Infrastructure.Repos
             return true;
         }
 
+        public async Task<AuthDto> ForgotPasswordAsync(string email)
+        {
+            var authModel = new AuthDto();
+            var user = await _userManager.FindByEmailAsync(email);
+
+            if (user == null)
+            {
+                authModel.Message = "If an account matches that email, a password reset code has been sent.";
+                return authModel;
+            }
+
+            var otp = _otpService.GenerateAndStoreOtp(user.Email);
+
+            string emailBody = $@"
+                <div style='font-family: Arial, sans-serif; padding: 20px; border: 1px solid #ddd; border-radius: 10px; max-width: 600px;'>
+                    <h2 style='color: #333;'>Password Reset Request</h2>
+                    <p>We received a request to reset your password. Please use the following 6-digit code:</p>
+                    <div style='background-color: #f4f4f4; padding: 15px; text-align: center; border-radius: 5px; margin: 20px 0;'>
+                        <span style='font-size: 24px; font-weight: bold; letter-spacing: 5px; color: #dc3545;'>{otp}</span>
+                    </div>
+                    <p style='font-size: 12px; color: #777;'>This code expires in 10 minutes. If you did not request a password reset, please ignore this email.</p>
+                </div>";
+
+            await _emailService.SendEmailAsync(user.Email, "Reset Your Password", emailBody);
+
+            authModel.Message = "If an account matches that email, a password reset code has been sent.";
+            return authModel;
+        }
+
+        public async Task<AuthDto> ResetPasswordAsync(ResetPasswordDto resetPasswordDto)
+        {
+            var authModel = new AuthDto();
+
+            var isValid = _otpService.ValidateOtp(resetPasswordDto.Email, resetPasswordDto.OtpCode);
+            if (!isValid)
+            {
+                authModel.Message = "Invalid or expired OTP.";
+                return authModel;
+            }
+
+            var user = await _userManager.FindByEmailAsync(resetPasswordDto.Email);
+            if (user == null)
+            {
+                authModel.Message = "User not found.";
+                return authModel;
+            }
+
+            var resetToken = await _userManager.GeneratePasswordResetTokenAsync(user);
+            var result = await _userManager.ResetPasswordAsync(user, resetToken, resetPasswordDto.NewPassword);
+
+            if (!result.Succeeded)
+            {
+                var errors = string.Join(", ", result.Errors.Select(e => e.Description));
+                authModel.Message = $"Failed to reset password: {errors}";
+                return authModel;
+            }
+
+            authModel.IsAuthenticated = true;
+            authModel.Message = "Password has been reset successfully. You can now log in.";
+
+            return authModel;
+        }
+
         private async Task<JwtSecurityToken> CreateJwtToken(AppUser user)
         {
             var userClaims = await _userManager.GetClaimsAsync(user);

@@ -12,5 +12,7 @@ namespace Ecommerce.Core.Interfaces
         Task<AuthDto> VerifyOtpAsync(VerifyOtpDto verifyDto);
         Task<AuthDto> RefreshTokenAsync(string refreshToken);
         Task<bool> RevokeTokenAsync(string refreshToken);
+        Task<AuthDto> ForgotPasswordAsync(string email);
+        Task<AuthDto> ResetPasswordAsync(ResetPasswordDto resetPasswordDto);
     }
 }
