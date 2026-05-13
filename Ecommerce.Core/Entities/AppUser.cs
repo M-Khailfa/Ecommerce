@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using Ecommerce.Core.Dtos.Auth;
+using Microsoft.AspNetCore.Identity;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
@@ -11,6 +12,6 @@ namespace Ecommerce.Core.Entities
         [Required]
         [MaxLength(30)]
         public string FullName { get; set; }
-        //public List<RefreshTokenDto>? RefreshTokens { get; set; }
+        public List<RefreshTokenDto>? RefreshTokens { get; set; }
     }
 }
