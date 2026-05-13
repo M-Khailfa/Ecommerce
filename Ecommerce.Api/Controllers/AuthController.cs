@@ -22,14 +22,6 @@ namespace Ecommerce.Api.Controllers
         public async Task<IActionResult> Register([FromBody] RegisterDto registerDto)
         {
             var response = new ApiResponse();
-            if (!ModelState.IsValid)
-            {
-                response = ApiResponse.BadRequest(ModelState.Values
-                    .SelectMany(v => v.Errors)
-                    .Select(e => e.ErrorMessage)
-                    .ToList());
-                return BadRequest(response);
-            }
 
             var result = await _authService.RegisterAsync(registerDto);
             if (!result.IsAuthenticated)
@@ -51,14 +43,6 @@ namespace Ecommerce.Api.Controllers
         public async Task<IActionResult> Login([FromBody] LoginDto loginDto)
         {
             var response = new ApiResponse();
-            if (!ModelState.IsValid)
-            {
-                response = ApiResponse.BadRequest(ModelState.Values
-                    .SelectMany(v => v.Errors)
-                    .Select(e => e.ErrorMessage)
-                    .ToList());
-                return BadRequest(response);
-            }
 
             var result = await _authService.LoginAsync(loginDto);
             if (!result.IsAuthenticated)
