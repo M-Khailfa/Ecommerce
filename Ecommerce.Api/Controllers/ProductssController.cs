@@ -95,15 +95,10 @@ namespace Ecommerce.Api.Controllers
         {
             var response = new ApiResponse();
             var result = await _productService.DeleteAsync(id);
-            if (result is null)
+            if (!result)
             {
                 response = ApiResponse.NotFound($"Product with ID {id} not found.");
                 return NotFound(response);
-            }
-            if (result == false)
-            {
-                response = ApiResponse.BadRequest("Failed to delete product.");
-                return BadRequest(response);
             }
             response = ApiResponse.Success("Product deleted successfully.");
             return Ok(response);

@@ -113,6 +113,13 @@ namespace Ecommerce.Infrastructure
             services.AddScoped<IAuthService, AuthService>();
             services.AddScoped<IImageService, ImageService>();
 
+            services.AddScoped<ICategoryService, CategoryService>();
+            services.AddScoped<IProductService, ProductService>();
+            services.AddScoped<IOrderService, OrderService>();
+            services.AddScoped<IPaymentService, PaymentService>();
+            services.AddScoped<IReviewService, ReviewService>();
+
+
             return services;
         }
     }

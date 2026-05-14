@@ -15,7 +15,7 @@ namespace Ecommerce.Core.Entities
 
         public decimal Total { get; set; }
 
-        [Required, MaxLength(50)]
+        [Required]
         public OrderStatus Status { get; set; } = OrderStatus.Pending;
 
         [MaxLength(500)]

@@ -22,7 +22,7 @@ namespace Ecommerce.Api.Controllers
         {
             var response = new ApiResponse();
             var result = await _categoryService.GetAllCategoriesAsync();
-            if (result is null || !result.Any())
+            if (result is null)
             {
                 response = ApiResponse.NotFound("No Categories Found!");
                 return NotFound(response);

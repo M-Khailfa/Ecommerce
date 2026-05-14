@@ -10,10 +10,10 @@ namespace Ecommerce.Core.Dtos.Product
         [Required, MaxLength(200)] string Name,
         [Required] int CategoryId,
         [MaxLength(100)] string? Brand,
-        string? Description,
-        decimal Price,
-        int Stock,
+        [Required] bool IsActive,
         IFormFile? Image,
-        bool IsActive
+        string? Description,
+        decimal Price = -1,
+        int Stock = -1
     );
 }

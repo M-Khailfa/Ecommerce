@@ -12,6 +12,6 @@ namespace Ecommerce.Core.Interfaces
         Task<IEnumerable<ProductDto>> GetByCategoryIdAsync(int categoryId);
         Task<ProductDto> CreateAsync(CreateProductDto dto);
         Task<ProductDto?> UpdateAsync(int id, UpdateProductDto dto);
-        Task<bool?> DeleteAsync(int id);
+        Task<bool> DeleteAsync(int id);
     }
 }

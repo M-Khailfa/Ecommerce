@@ -90,11 +90,16 @@ namespace Ecommerce.Infrastructure.Repos
 
             product.Name = dto.Name;
             product.CategoryId = dto.CategoryId;
-            product.Brand = dto.Brand;
-            product.Description = dto.Description;
-            product.Price = dto.Price;
-            product.Stock = dto.Stock;
-            product.ImageUrl = await _imageService.UploadImageAsync(dto.Image);
+            if(!string.IsNullOrEmpty(dto.Brand))
+                product.Brand = dto.Brand;
+            if (!string.IsNullOrEmpty(dto.Description))
+                product.Description = dto.Description;
+            if(dto.Price >= 0)
+                product.Price = dto.Price;
+            if(dto.Stock >= 0)
+                product.Stock = dto.Stock;
+            if(dto.Image is not null)
+                product.ImageUrl = await _imageService.UploadImageAsync(dto.Image);
             product.IsActive = dto.IsActive;
 
             await _context.SaveChangesAsync();
@@ -103,12 +108,12 @@ namespace Ecommerce.Infrastructure.Repos
             return ToDto(product);
         }
 
-        public async Task<bool?> DeleteAsync(int id)
+        public async Task<bool> DeleteAsync(int id)
         {
             var product = await _context.Products.FindAsync(id);
 
-            if (product is null)
-                return null;
+            if (product is null || !product.IsActive)
+                return false;
 
             product.IsActive = false;
 
