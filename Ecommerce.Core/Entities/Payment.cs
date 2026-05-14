@@ -14,10 +14,10 @@ namespace Ecommerce.Core.Entities
         public int OrderId { get; set; }
 
         [Required, MaxLength(50)]
-        public string Method { get; set; } = PaymentMethod.COD.ToString();
+        public PaymentMethod Method { get; set; } = PaymentMethod.COD;
 
         [Required, MaxLength(50)]
-        public string Status { get; set; } = PaymentStatus.Pending.ToString();
+        public PaymentStatus Status { get; set; } = PaymentStatus.Pending;
 
         public decimal Amount { get; set; }
 
