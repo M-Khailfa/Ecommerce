@@ -7,8 +7,7 @@ using System.Text;
 namespace Ecommerce.Core.Dtos.Payment
 {
     public record CreatePaymentDto(
-        [Required] int OrderId,
-        [Required] PaymentMethod Method
+        [Required] int OrderId
     );
 
     public record PaymentDto(
@@ -18,5 +17,11 @@ namespace Ecommerce.Core.Dtos.Payment
         PaymentStatus Status,
         decimal Amount,
         DateTime? PaidAt
+    );
+
+    public record PaymentIntentDto(
+        string ClientSecret,
+        string PublicKey,
+        int OrderId
     );
 }

@@ -22,6 +22,7 @@ namespace Ecommerce.Core.Entities
         public decimal Amount { get; set; }
 
         public DateTime? PaidAt { get; set; }
+        public string? Reference { get; set; }
 
         // Navigation
         public Order Order { get; set; } = null!;

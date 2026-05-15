@@ -34,36 +34,28 @@ namespace Ecommerce.Api.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> Pay(CreatePaymentDto dto)
+        public async Task<IActionResult> Initiate(CreatePaymentDto dto)
         {
             var response = new ApiResponse();
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
-            var (payment, error) = await _paymentService.PayAsync(userId, dto);
+            var (result, error) = await _paymentService.InitiateAsync(userId, dto);
 
             if (error == "Order not found.")
             {
                 response = ApiResponse.NotFound(error);
                 return NotFound(response);
             }
-
-            if(error == "Forbidden.")
+            if (error == "Forbidden.")
             {
                 return Forbid();
             }
-
-            if (error is not null && error.StartsWith("This order"))
-            {
-                response = ApiResponse.Conflict(error);
-                return Conflict(response);
-            }
-
             if (error is not null)
             {
                 response = ApiResponse.BadRequest(error);
                 return BadRequest(response);
             }
 
-            response = ApiResponse.Success(payment, "Payment processed successfully.");
+            response = ApiResponse.Success(result, "Payment intent created successfully.");
             return Ok(response);
         }
     }

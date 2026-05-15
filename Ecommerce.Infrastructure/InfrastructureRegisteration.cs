@@ -31,6 +31,7 @@ namespace Ecommerce.Infrastructure
             });
 
             services.Configure<JWT>(configuration.GetSection("JWT"));
+            services.Configure<Paymob>(configuration.GetSection("Paymob"));
             services.Configure<CloudinarySettings>(configuration.GetSection("CloudinarySettings"));
 
             services.AddRateLimiter(options =>
@@ -118,7 +119,15 @@ namespace Ecommerce.Infrastructure
             services.AddScoped<IOrderService, OrderService>();
             services.AddScoped<IPaymentService, PaymentService>();
             services.AddScoped<IReviewService, ReviewService>();
+            services.AddScoped<IPaymobService, PaymobService>();
 
+            var paymobSettings = configuration.GetSection("Paymob").Get<Paymob>()!;
+            services.AddSingleton(paymobSettings);
+
+            services.AddHttpClient<IPaymobService, PaymobService>(client =>
+            {
+                client.BaseAddress = new Uri(paymobSettings.BaseUrl);
+            });
 
             return services;
         }
