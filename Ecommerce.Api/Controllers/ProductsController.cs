@@ -10,10 +10,10 @@ namespace Ecommerce.Api.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class ProductssController : ControllerBase
+    public class ProductsController : ControllerBase
     {
         private readonly IProductService _productService;
-        public ProductssController(IProductService productService)
+        public ProductsController(IProductService productService)
         {
             _productService = productService;
         }

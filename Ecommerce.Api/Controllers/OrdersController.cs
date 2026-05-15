@@ -12,11 +12,11 @@ namespace Ecommerce.Api.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class OrderssController : ControllerBase
+    public class OrdersController : ControllerBase
     {
         private readonly IOrderService _orderService;
 
-        public OrderssController(IOrderService orderService)
+        public OrdersController(IOrderService orderService)
         {
             _orderService = orderService;
         }
