@@ -1,6 +1,8 @@
 using Ecommerce.Infrastructure;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.OpenApi;
 using Scalar.AspNetCore;
+using System.Threading.RateLimiting;
 namespace Ecommerce.Api
 {
     public class Program
@@ -28,6 +30,36 @@ namespace Ecommerce.Api
 
             var app = builder.Build();
 
+            // Rate Limiting Configuration
+            builder.Services.AddRateLimiter(options =>
+            {
+                options.GlobalLimiter = PartitionedRateLimiter.Create<HttpContext, string>(httpContext =>
+                {
+                    var remoteIp = httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown";
+
+                    return RateLimitPartition.GetFixedWindowLimiter(remoteIp, _ => new FixedWindowRateLimiterOptions
+                    {
+                        PermitLimit = 1000,
+                        Window = TimeSpan.FromMinutes(1),
+                        QueueLimit = 0
+                    });
+                });
+                options.AddFixedWindowLimiter("api", opt =>
+                {
+                    opt.PermitLimit = 1000;
+                    opt.Window = TimeSpan.FromMinutes(1);
+                });
+                options.OnRejected = async (context, token) =>
+                {
+                    context.HttpContext.Response.StatusCode = StatusCodes.Status429TooManyRequests;
+                    await context.HttpContext.Response.WriteAsJsonAsync(new
+                    {
+                        StatusCode = 429,
+                        Message = "Too many requests. Please slow down."
+                    });
+                };
+            });
+
             // Configure the HTTP request pipeline.
             app.UseExceptionHandler(errorApp =>
             {
@@ -47,11 +79,12 @@ namespace Ecommerce.Api
 
             app.UseHttpsRedirection();
             app.UseCors();
+            app.UseRateLimiter();
             app.UseAuthentication();
             app.UseAuthorization();
 
             app.MapControllers();
-
+            app.MapControllers().RequireRateLimiting("api");
             app.Run();
         }
     }
