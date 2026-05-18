@@ -1,10 +1,8 @@
 ﻿using Ecommerce.Core.Dtos.Product;
 using Ecommerce.Core.Entities;
 using Ecommerce.Core.Interfaces;
+using Ecommerce.Core.Settings;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace Ecommerce.Infrastructure.Repos
 {
@@ -18,12 +16,17 @@ namespace Ecommerce.Infrastructure.Repos
             _imageService = imageService;
         }
 
-        public async Task<IEnumerable<ProductDto>> GetAllAsync(string? search, int? categoryId, decimal? minPrice, decimal? maxPrice)
+        public async Task<PagedList<ProductDto>> GetAllAsync(
+                    string? search, int? categoryId, decimal? minPrice, decimal? maxPrice,
+                    int pageNumber = 1, int pageSize = 10)
         {
+            pageSize = Math.Clamp(pageSize, 1, 50);
+            pageNumber = Math.Max(1, pageNumber);
+
             var query = _context.Products
-            .Include(p => p.Category)
-            .Where(p => p.IsActive)
-            .AsQueryable();
+                .Include(p => p.Category)
+                .Where(p => p.IsActive)
+                .AsQueryable();
 
             if (!string.IsNullOrWhiteSpace(search))
                 query = query.Where(p =>
@@ -40,7 +43,15 @@ namespace Ecommerce.Infrastructure.Repos
             if (maxPrice.HasValue)
                 query = query.Where(p => p.Price <= maxPrice.Value);
 
-            return await query.Select(p => ToDto(p)).ToListAsync();
+            var totalCount = await query.CountAsync();
+            var items = await query
+                .OrderBy(p => p.Id)
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .Select(p => ToDto(p))
+                .ToListAsync();
+
+            return new PagedList<ProductDto>(items, totalCount, pageNumber, pageSize);
         }
 
         public async Task<ProductDto?> GetByIdAsync(int id)
@@ -49,16 +60,6 @@ namespace Ecommerce.Infrastructure.Repos
                 .Include(p => p.Category)
                 .FirstOrDefaultAsync(p => p.Id == id && p.IsActive);
             return product is null ? null : ToDto(product);
-        }
-
-        public async Task<IEnumerable<ProductDto>> GetByCategoryIdAsync(int categoryId)
-        {
-            var products = await _context.Products
-                .Include(p => p.Category)
-                .Where(p => p.CategoryId == categoryId && p.IsActive)
-                .Select(p => ToDto(p))
-                .ToListAsync();
-            return products;
         }
 
         public async Task<ProductDto> CreateAsync(CreateProductDto dto)

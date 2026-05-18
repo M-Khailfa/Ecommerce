@@ -31,7 +31,9 @@ namespace Ecommerce.Api.Controllers
             return Ok(response);
         }
 
+        
         [HttpGet("{id}")]
+        [Authorize]
         public async Task<IActionResult> GetById(int id)
         {
             var response = new ApiResponse();
@@ -48,6 +50,7 @@ namespace Ecommerce.Api.Controllers
         }
 
         [HttpPost]
+        [Authorize]
         public async Task<IActionResult> PlaceOrder(PlaceOrderDto dto)
         {
             var response = new ApiResponse();

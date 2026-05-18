@@ -45,20 +45,6 @@ namespace Ecommerce.Api.Controllers
             return Ok(response);
         }
 
-        [HttpGet("category/{categoryId}")]
-        public async Task<IActionResult> GetByCategoryId(int categoryId)
-        {
-            var response = new ApiResponse();
-            var products = await _productService.GetByCategoryIdAsync(categoryId);
-            if (products is null || !products.Any())
-            {
-                response = ApiResponse.NotFound($"No products found for category ID {categoryId}.");
-                return NotFound(response);
-            }
-            response = ApiResponse.Success(products, "Products retrieved successfully.");
-            return Ok(response);
-        }
-
         [HttpPost]
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Create([FromForm] CreateProductDto dto)

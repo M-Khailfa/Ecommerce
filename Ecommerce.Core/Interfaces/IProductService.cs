@@ -1,15 +1,13 @@
 ﻿using Ecommerce.Core.Dtos.Product;
-using System;
-using System.Collections.Generic;
-using System.Text;
+using Ecommerce.Core.Settings;
 
 namespace Ecommerce.Core.Interfaces
 {
     public interface IProductService
     {
-        Task<IEnumerable<ProductDto>> GetAllAsync(string? search, int? categoryId, decimal? minPrice, decimal? maxPrice);
-        Task<ProductDto?> GetByIdAsync(int id);
-        Task<IEnumerable<ProductDto>> GetByCategoryIdAsync(int categoryId);
+        Task<PagedList<ProductDto>> GetAllAsync(
+                    string? search, int? categoryId, decimal? minPrice, decimal? maxPrice,
+                    int pageNumber = 1, int pageSize = 10); Task<ProductDto?> GetByIdAsync(int id);
         Task<ProductDto> CreateAsync(CreateProductDto dto);
         Task<ProductDto?> UpdateAsync(int id, UpdateProductDto dto);
         Task<bool> DeleteAsync(int id);
