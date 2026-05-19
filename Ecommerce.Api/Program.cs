@@ -3,6 +3,8 @@ using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.OpenApi;
 using Scalar.AspNetCore;
 using System.Threading.RateLimiting;
+using Serilog;
+using Ecommerce.Api.Middlewares;
 namespace Ecommerce.Api
 {
     public class Program
@@ -10,6 +12,9 @@ namespace Ecommerce.Api
         public static void Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
+
+            builder.Host.UseSerilog((context, configuration) =>
+                configuration.ReadFrom.Configuration(context.Configuration));
 
             // Add services to the container.
             builder.Services.AddCors(options =>
@@ -28,18 +33,14 @@ namespace Ecommerce.Api
             builder.Services.AddSwaggerGen();
             builder.Services.InfrastructureConfiguration(builder.Configuration);
 
+            builder.Services.AddHealthChecks()
+                .AddSqlServer(builder.Configuration.GetConnectionString("EcommerceDb")
+                ?? throw new InvalidOperationException("Connection string 'EcommerceDb' not found."));
+
             var app = builder.Build();
 
             // Configure the HTTP request pipeline.
-            app.UseExceptionHandler(errorApp =>
-            {
-                errorApp.Run(async context =>
-                {
-                    context.Response.StatusCode = 500;
-                    context.Response.ContentType = "application/json";
-                    await context.Response.WriteAsJsonAsync(new { Message = "An unexpected error occurred." });
-                });
-            });
+            app.UseMiddleware<ExceptionMiddleware>();
             app.UseSwagger();
             app.UseSwaggerUI(c =>
             {
@@ -55,6 +56,7 @@ namespace Ecommerce.Api
 
             app.MapControllers();
             app.MapControllers().RequireRateLimiting("api");
+            app.MapHealthChecks("/health"); 
             app.Run();
         }
     }
